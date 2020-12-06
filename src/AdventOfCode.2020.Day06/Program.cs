@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 
-var input = File.ReadAllText("input.txt", Encoding.UTF8);
+var input = File.ReadAllText("input.txt");
 
 var part1 = input.Split("\r\n\r\n").Select(group => group.Replace("\r\n", string.Empty).Distinct().Count()).Sum();
 var part2 = input.Split("\r\n\r\n").Select(group => group.Split("\r\n").Aggregate((acc, x) => string.Concat(acc.Intersect(x))).Count()).Sum();
