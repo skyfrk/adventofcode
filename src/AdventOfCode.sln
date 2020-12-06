@@ -15,6 +15,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdventOfCode.2020.Day05", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdventOfCode.2020.Day06", "AdventOfCode.2020.Day06\AdventOfCode.2020.Day06.csproj", "{3C033A78-4749-4794-80C3-43F4039CB733}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2020", "2020", "{EEE223C1-5A9C-44B4-BF18-68E699F67424}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{B9EAE0B7-62E9-4F9E-A266-5E07284F78B7}"
+	ProjectSection(SolutionItems) = preProject
+		..\.gitignore = ..\.gitignore
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -100,6 +109,14 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CAF85177-DD9A-4567-AD55-6D2FA5F78D55} = {EEE223C1-5A9C-44B4-BF18-68E699F67424}
+		{1AA19AE8-EA67-4D63-BB54-EE7A6CB45471} = {EEE223C1-5A9C-44B4-BF18-68E699F67424}
+		{B32DF273-67A9-46E4-8BB5-346844314D43} = {EEE223C1-5A9C-44B4-BF18-68E699F67424}
+		{0AC04484-C62F-43B7-8E33-8B80CA2DCBFE} = {EEE223C1-5A9C-44B4-BF18-68E699F67424}
+		{05C92FB0-F5FF-4D09-A099-CF5D104654D8} = {EEE223C1-5A9C-44B4-BF18-68E699F67424}
+		{3C033A78-4749-4794-80C3-43F4039CB733} = {EEE223C1-5A9C-44B4-BF18-68E699F67424}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {67C419AA-949C-4298-AE00-4CFC1D8EE00B}
