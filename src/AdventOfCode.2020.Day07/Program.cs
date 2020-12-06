@@ -1,3 +1,3 @@
 ﻿using System.IO;
 
-var input = File.ReadAllLines("input.txt");
+var input = File.ReadAllText("input.txt");
