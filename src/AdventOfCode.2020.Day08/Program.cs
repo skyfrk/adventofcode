@@ -82,7 +82,7 @@ void SolvePart2()
 
         if (result.Success)
         {
-            Console.WriteLine($"Part2: {result.Value}");
+            Console.WriteLine($"Part 2: {result.Value}");
         }
 
     }
