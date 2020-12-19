@@ -8,14 +8,44 @@ var input = File.ReadAllLines("sample.input.txt");
 
 long sum = 0;
 
-var numRegex = new Regex(@"[0-9]");
-
 foreach (var line in input)
 {
     var tokens = GetTokens(line);
     var tokenTree = ParseTokens(tokens);
-    var value = tokenTree.GetValue();
-    sum += value;
+    PrintTree(tokenTree);
+    // var value = tokenTree.GetValue();
+    //sum += value;
+}
+
+void PrintTree(TokenTree tree, int spaceCount = 0)
+{
+    var space = string.Empty;
+
+    for(int i = 0; i < spaceCount; i++)
+    {
+        space += " ";
+    }
+
+    if(tree != null)
+    {
+        if(tree.Token.Type == TokenType.Number)
+        {
+            Console.WriteLine($"{space}Number{tree.Token.Value}");
+        }
+        else
+        {
+            Console.WriteLine($"{space}{Enum.GetName(typeof(TokenType), tree.Token.Type)}");
+        }
+        if(tree.LeftChild != null)
+        {
+            PrintTree(tree.LeftChild, spaceCount + 2);
+        }
+        if (tree.RightChild != null)
+        {
+            PrintTree(tree.RightChild, spaceCount + 2);
+        }
+    }
+
 }
 
 Console.WriteLine($"Part 1: {sum}");
@@ -40,19 +70,19 @@ TokenTree ParseTokens(Token[] tokens)
         if (remainingTokens[0].Type == TokenType.Number)
         {
             var numberTokens = new List<Token>();
-            var tokenIndicesToBeRemovedCount = 0;
+            var tokenToBeRemovedCount = 0;
 
             for (int i = 0; i < remainingTokens.Count; i++)
             {
                 if (remainingTokens[i].Type == TokenType.Number)
                 {
                     numberTokens.Add(remainingTokens[i]);
-                    tokenIndicesToBeRemovedCount++;
+                    tokenToBeRemovedCount++;
                 }
                 else break;
             }
 
-            remainingTokens.RemoveRange(0, tokenIndicesToBeRemovedCount);
+            remainingTokens.RemoveRange(0, tokenToBeRemovedCount);
 
             var number = int.Parse(string.Concat(numberTokens.Select(t => t.Value.ToString())));
             var numberToken = new Token(TokenType.Number, number);
@@ -80,7 +110,7 @@ TokenTree ParseTokens(Token[] tokens)
 
             nextTree = ParseTokens(tokensInBrackets.ToArray());
         }
-        else if (remainingTokens[0].Type is TokenType.Multiplication or TokenType.Plus)
+        else if (remainingTokens[0].Type is TokenType.Multiplication or TokenType.Addition)
         {
             operatorToken = remainingTokens[0];
             remainingTokens.RemoveAt(0);
@@ -111,7 +141,7 @@ Token[] GetTokens(string line)
 
         var tokenType = value switch
         {
-            '+' => TokenType.Plus,
+            '+' => TokenType.Addition,
             '*' => TokenType.Multiplication,
             '(' => TokenType.BracketOpen,
             ')' => TokenType.BracketClose,
@@ -144,7 +174,7 @@ Token[] GetTokens(string line)
 enum TokenType
 {
     Number,
-    Plus,
+    Addition,
     Multiplication,
     BracketOpen,
     BracketClose
@@ -157,7 +187,7 @@ record TokenTree(Token Token, TokenTree LeftChild, TokenTree RightChild)
     public long GetValue() => Token.Type switch
         {
             TokenType.Number => Token.Value,
-            TokenType.Plus => LeftChild.GetValue() + RightChild.GetValue(),
+            TokenType.Addition => LeftChild.GetValue() + RightChild.GetValue(),
             TokenType.Multiplication => LeftChild.GetValue() * RightChild.GetValue(),
             _ => throw new InvalidOperationException("Can not get value for given token type.")
         };
