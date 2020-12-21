@@ -28,8 +28,8 @@ tiles.RemoveAt(firstTileIdx);
 
 var iterationCount = 0;
 
-//PrintFullPicture(iterationCount);
-//PrintFullPictureTileIds(iterationCount);
+PrintFullPicture(iterationCount);
+PrintFullPictureTileIds(iterationCount);
 
 // i assume that there are only unique matching edges... => assumption is wrong. fuck.
 while (TryGetNextEmptySpot(out var position))
@@ -96,10 +96,10 @@ while (TryGetNextEmptySpot(out var position))
     }
     iterationCount++;
 
-    //PrintFullPicture(iterationCount);
-    PrintFullPictureTileIds(iterationCount);
+    PrintFullPicture(iterationCount);
+    // PrintFullPictureTileIds(iterationCount);
 
-    // System.Threading.Thread.Sleep(50);
+    System.Threading.Thread.Sleep(50);
 }
 
 List<Tile> targetTiles = new()
@@ -377,7 +377,7 @@ bool IsAboveBelowLeftRightMatch(Tile above, Tile left, Tile belowRight)
 {
     for (int i = 0; i < tileEdgeLength; i++)
     {
-        if (left.Picture[i, tileEdgeLength - 1] != belowRight.Picture[i, 0] && above.Picture[tileEdgeLength - 1, i] != belowRight.Picture[0, i]) return false;
+        if (left.Picture[i, tileEdgeLength - 1] != belowRight.Picture[i, 0] || above.Picture[tileEdgeLength - 1, i] != belowRight.Picture[0, i]) return false;
     }
     return true;
 }
