@@ -28,10 +28,10 @@ tiles.RemoveAt(firstTileIdx);
 
 var iterationCount = 0;
 
-PrintFullPicture(iterationCount);
-PrintFullPictureTileIds(iterationCount);
+// PrintFullPicture(iterationCount);
+// PrintFullPictureTileIds(iterationCount);
 
-// i assume that there are only unique matching edges... => assumption is wrong. fuck.
+// i assume that there are only unique matching edges...
 while (TryGetNextEmptySpot(out var position))
 {
     // first row doesn't care about the tiles above
@@ -68,9 +68,9 @@ while (TryGetNextEmptySpot(out var position))
     }
     else
     {
-        if(position.column == 0)
+        if (position.column == 0)
         {
-            if(TryGetMatchForAboveTile(fullPicture[position.row - 1, position.column], out var idx))
+            if (TryGetMatchForAboveTile(fullPicture[position.row - 1, position.column], out var idx))
             {
                 fullPicture[position.row, position.column] = tiles[idx];
                 tiles.RemoveAt(idx);
@@ -96,10 +96,10 @@ while (TryGetNextEmptySpot(out var position))
     }
     iterationCount++;
 
-    PrintFullPicture(iterationCount);
+    // PrintFullPicture(iterationCount);
     // PrintFullPictureTileIds(iterationCount);
 
-    System.Threading.Thread.Sleep(50);
+    // System.Threading.Thread.Sleep(50);
 }
 
 List<Tile> targetTiles = new()
@@ -112,11 +112,168 @@ List<Tile> targetTiles = new()
 
 Console.WriteLine($"Part 1: {targetTiles.Aggregate(1L, (acc, tile) => acc * tile.Id)}");
 
+// Part 2 below:
+
+// 1. mark the frame for each tile
+
+foreach (var tile in fullPicture)
+{
+    for (int row = 0; row < tileEdgeLength; row++)
+    {
+        for (int col = 0; col < tileEdgeLength; col++)
+        {
+            if (col == 0 || row == 0 || row == tileEdgeLength - 1 || col == tileEdgeLength - 1)
+            {
+                tile.Picture[row, col] = 'X';
+            }
+        }
+    }
+}
+
+// 2. create complete canvas
+
+List<string> pictureStringList = new();
+
+for (int fullPicRow = 0; fullPicRow < fullPictureEdgeLength; fullPicRow++)
+{
+    for (int tileRow = 0; tileRow < tileEdgeLength; tileRow++)
+    {
+        var tileRowFullPictureString = string.Empty;
+
+        for (int fullPictureCol = 0; fullPictureCol < fullPictureEdgeLength; fullPictureCol++)
+        {
+            var tile = fullPicture[fullPicRow, fullPictureCol];
+
+            for (int tileCol = 0; tileCol < tileEdgeLength; tileCol++)
+            {
+                if (tile.Picture[tileRow, tileCol] != 'X')
+                {
+                    tileRowFullPictureString += tile.Picture[tileRow, tileCol];
+                }
+            }
+        }
+
+        if (tileRowFullPictureString != string.Empty)
+        {
+            pictureStringList.Add(tileRowFullPictureString);
+        }
+    }
+}
+
+var canvas = pictureStringList.Select(p => p.ToCharArray()).To2DArray();
+
+var canvasEdgeLength = (int)Math.Sqrt(canvas.Length);
+
+var monsterCount = 0;
+
+for (int rotateCount = 0; rotateCount < 8; rotateCount++)
+{
+    // try to find a monster for each pixel
+
+    for (int canvasRow = 0; canvasRow < canvasEdgeLength; canvasRow++)
+    {
+        for (int canvasCol = 0; canvasCol < canvasEdgeLength; canvasCol++)
+        {
+            if (PixelIsStartOfAMonster(canvasRow, canvasCol)) monsterCount++;
+        }
+    }
+
+    RotateCanvas();
+
+    if (rotateCount == 3) FlipCanvas();
+}
+
+var sharpCount = 0;
+
+foreach (var pixel in canvas)
+{
+    if (pixel == '#') sharpCount++;
+}
+
+Console.WriteLine($"Part 2: {sharpCount - (monsterCount * 15)}");
+
+bool PixelIsStartOfAMonster(int row, int col)
+{
+    List<(int rowOffset, int colOffset)> monsterOffsets = new()
+    {
+        (-1, 1),
+        (-1, 4),
+        (0, 5),
+        (0, 6),
+        (-1, 7),
+        (-1, 10),
+        (0, 11),
+        (0, 12),
+        (-1, 13),
+        (-1, 16),
+        (0, 17),
+        (0, 18),
+        (1, 18),
+        (0, 19)
+    };
+
+    var minRowOffset = -1;
+    var maxRowOffset = 1;
+    var maxColOffset = 19;
+
+    if (row + minRowOffset < 0 || row + maxRowOffset >= canvasEdgeLength || col + maxColOffset >= canvasEdgeLength) return false;
+
+    foreach (var (rowOffset, colOffset) in monsterOffsets)
+    {
+        if (canvas[row + rowOffset, col + colOffset] != '#') return false;
+    }
+
+    return true;
+}
+
+void FlipCanvas()
+{
+    char[,] tmpCopy = new char[canvasEdgeLength, canvasEdgeLength];
+    Array.Copy(canvas, tmpCopy, canvas.Length);
+
+    for (int row = 0; row < canvasEdgeLength; row++)
+    {
+        for (int col = 0; col < canvasEdgeLength; col++)
+        {
+            canvas[row, col] = tmpCopy[canvasEdgeLength - 1 - row, col];
+        }
+    }
+}
+
+void RotateCanvas()
+{
+    char[,] rotatedCanvas = new char[canvasEdgeLength, canvasEdgeLength];
+
+    for (int i = 0; i < canvasEdgeLength; ++i)
+    {
+        for (int j = 0; j < canvasEdgeLength; ++j)
+        {
+            rotatedCanvas[i, j] = canvas[canvasEdgeLength - j - 1, i];
+        }
+    }
+
+    canvas = rotatedCanvas;
+}
+
+void PrintCanvas()
+{
+    for (int row = 0; row < canvasEdgeLength; row++)
+    {
+        var stringToWrite = string.Empty;
+
+        for (int col = 0; col < canvasEdgeLength; col++)
+        {
+            stringToWrite += canvas[row, col];
+        }
+        Console.WriteLine(stringToWrite);
+    }
+}
+
 void FlipSetTilesInFullPictureAsAWhole()
 {
     foreach (var tile in fullPicture)
     {
-        if(tile != null)
+        if (tile != null)
         {
             tile.Flip();
         }
@@ -124,7 +281,7 @@ void FlipSetTilesInFullPictureAsAWhole()
 
     var lastRowIncludeInFlip = 0;
 
-    for(int row = 0; row < fullPictureEdgeLength; row++)
+    for (int row = 0; row < fullPictureEdgeLength; row++)
     {
         if (fullPicture[row, 0] == null) break;
         lastRowIncludeInFlip = row;
@@ -147,7 +304,7 @@ void PrintTile(Tile tile)
 {
     Console.WriteLine($"Tile id: {tile.Id}");
 
-    for(int row = 0; row < tileEdgeLength; row++)
+    for (int row = 0; row < tileEdgeLength; row++)
     {
         var printStr = string.Empty;
 
@@ -155,7 +312,7 @@ void PrintTile(Tile tile)
         {
             printStr += tile.Picture[row, col];
         }
-        
+
         Console.WriteLine(printStr);
     }
     Console.WriteLine(string.Empty);
@@ -175,7 +332,7 @@ void PrintFullPictureTileIds(int iterationCount)
         {
             var tile = fullPicture[row, col];
 
-            if(tile == null)
+            if (tile == null)
             {
                 colStr += " null";
             }
@@ -196,7 +353,7 @@ void PrintFullPicture(int iterationCount)
     Console.WriteLine($"Iteration: {iterationCount}");
     Console.WriteLine(string.Empty);
 
-    for(int fullPicRow = 0; fullPicRow < fullPictureEdgeLength; fullPicRow++)
+    for (int fullPicRow = 0; fullPicRow < fullPictureEdgeLength; fullPicRow++)
     {
         for (int tileRow = 0; tileRow < tileEdgeLength; tileRow++)
         {
@@ -206,13 +363,13 @@ void PrintFullPicture(int iterationCount)
             {
                 var tile = fullPicture[fullPicRow, fullPictureCol];
 
-                if(tile == null)
+                if (tile == null)
                 {
                     tileRowFullPictureString += new string(Enumerable.Range(0, tileEdgeLength).Select(x => '0').ToArray());
                 }
                 else
                 {
-                    for(int tileCol = 0; tileCol < tileEdgeLength; tileCol++)
+                    for (int tileCol = 0; tileCol < tileEdgeLength; tileCol++)
                     {
                         tileRowFullPictureString += tile.Picture[tileRow, tileCol];
                     }
@@ -230,7 +387,7 @@ void PrintFullPicture(int iterationCount)
 
 int GetColIndexWithNeighborToTheRight(int row, int startCol)
 {
-    for(int col = startCol; col < fullPictureEdgeLength; col++)
+    for (int col = startCol; col < fullPictureEdgeLength; col++)
     {
         if (col + 1 > fullPictureEdgeLength - 1) throw new InvalidOperationException("shit :(");
         if (fullPicture[row, col + 1] != null) return col;
@@ -249,9 +406,9 @@ void ShiftTilesInARowToTheRight(int row)
 {
     var firstNullIndex = 0;
 
-    for(int col = 0; col < fullPictureEdgeLength; col++)
+    for (int col = 0; col < fullPictureEdgeLength; col++)
     {
-        if(fullPicture[row, col] == null)
+        if (fullPicture[row, col] == null)
         {
             firstNullIndex = col;
             break;
@@ -260,7 +417,7 @@ void ShiftTilesInARowToTheRight(int row)
 
     var offset = fullPictureEdgeLength - firstNullIndex;
 
-    for(int col = firstNullIndex - 1; col >= 0; col--)
+    for (int col = firstNullIndex - 1; col >= 0; col--)
     {
         fullPicture[row, col + offset] = fullPicture[row, col];
         fullPicture[row, col] = null;
@@ -269,11 +426,11 @@ void ShiftTilesInARowToTheRight(int row)
 
 bool TryGetNextEmptySpot(out (int row, int column) position)
 {
-    for(int row = 0; row < fullPictureEdgeLength; row++)
+    for (int row = 0; row < fullPictureEdgeLength; row++)
     {
-        for(int col = 0; col < fullPictureEdgeLength; col++)
+        for (int col = 0; col < fullPictureEdgeLength; col++)
         {
-            if(fullPicture[row, col] == null)
+            if (fullPicture[row, col] == null)
             {
                 position = (row, col);
                 return true;
@@ -331,11 +488,11 @@ bool TryGetMatchForAboveTile(Tile above, out int matchingTileIdx)
 
 bool TryGetMatchForLeftTile(Tile left, out int matchingTileIdx)
 {
-    for(int i = 0; i < tiles.Count; i++)
+    for (int i = 0; i < tiles.Count; i++)
     {
-        for(int rotateCount = 0; rotateCount < 8; rotateCount++)
+        for (int rotateCount = 0; rotateCount < 8; rotateCount++)
         {
-            if(IsLeftRightMatch(left, tiles[i]))
+            if (IsLeftRightMatch(left, tiles[i]))
             {
                 matchingTileIdx = i;
                 return true;
@@ -440,15 +597,13 @@ class Tile
         char[,] copy = new char[length, length];
         Array.Copy(Picture, copy, Picture.Length);
 
-        for(int row = 0; row < length; row++)
+        for (int row = 0; row < length; row++)
         {
             for (int col = 0; col < length; col++)
             {
                 Picture[row, col] = copy[length - 1 - row, col];
             }
         }
-
-        Console.WriteLine("");
     }
 }
 
