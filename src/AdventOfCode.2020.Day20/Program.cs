@@ -26,14 +26,28 @@ tiles.RemoveAt(0);
 
 var iterationCount = 0;
 
-while(TryGetNextEmptySpot(out var position))
+//PrintTile(tiles[0]);
+//tiles[0].Rotate();
+//PrintTile(tiles[0]);
+//tiles[0].Rotate();
+//PrintTile(tiles[0]);
+//tiles[0].Rotate();
+//PrintTile(tiles[0]);
+
+//PrintTile(tiles[0]);
+//tiles[0].Flip();
+//PrintTile(tiles[0]);
+
+
+while (TryGetNextEmptySpot(out var position))
 {
     PrintFullPicture(iterationCount);
+    PrintFullPictureTileIds();
 
     // first row doesn't care about the tiles above
     if (position.row == 0)
     {
-        if(HasNeighborToTheLeft(position.row, position.column))
+        if (HasNeighborToTheLeft(position.row, position.column))
         {
             // try to find something that matches
             if (TryGetMatchForLeftTile(fullPicture[position.row, position.column - 1], out var idx))
@@ -69,6 +83,52 @@ while(TryGetNextEmptySpot(out var position))
     }
 
     iterationCount++;
+}
+
+
+void PrintTile(Tile tile)
+{
+    Console.WriteLine($"Tile id: {tile.Id}");
+
+    for(int row = 0; row < tileEdgeLength; row++)
+    {
+        var printStr = string.Empty;
+
+        for (int col = 0; col < tileEdgeLength; col++)
+        {
+            printStr += tile.Picture[row, col];
+        }
+        
+        Console.WriteLine(printStr);
+    }
+    Console.WriteLine(string.Empty);
+}
+
+void PrintFullPictureTileIds()
+{
+    Console.WriteLine(string.Empty);
+
+    for(int row = 0; row < fullPictureEdgeLength; row++)
+    {
+        var colStr = string.Empty;
+
+        for (int col = 0; col < fullPictureEdgeLength; col++)
+        {
+            var tile = fullPicture[row, col];
+
+            if(tile == null)
+            {
+                colStr += " null";
+            }
+            else
+            {
+                colStr += $" {tile.Id}";
+            }
+        }
+
+        Console.WriteLine(colStr);
+        Console.WriteLine(string.Empty);
+    }
 }
 
 void PrintFullPicture(int iterationCount)
@@ -171,7 +231,7 @@ bool TryGetMatchForLeftTile(Tile left, out int matchingTileIdx)
 {
     for(int i = 0; i < tiles.Count; i++)
     {
-        for(int rotateCount = 0; rotateCount < 4; rotateCount++)
+        for(int rotateCount = 0; rotateCount < 8; rotateCount++)
         {
             if(IsLeftRightMatch(left, tiles[i]))
             {
@@ -180,6 +240,8 @@ bool TryGetMatchForLeftTile(Tile left, out int matchingTileIdx)
             }
 
             tiles[i].Rotate();
+
+            if (rotateCount == 3) tiles[i].Flip();
         }
     }
 
@@ -187,6 +249,7 @@ bool TryGetMatchForLeftTile(Tile left, out int matchingTileIdx)
     return false;
 }
 
+// this is probably broken
 bool TryGetMatchForRightTile(Tile right, out int matchingTileIdx)
 {
     for (int i = 0; i < tiles.Count; i++)
@@ -200,6 +263,8 @@ bool TryGetMatchForRightTile(Tile right, out int matchingTileIdx)
             }
 
             tiles[i].Rotate();
+
+            if (rotateCount == 3) tiles[i].Flip();
         }
     }
 
@@ -257,6 +322,24 @@ class Tile
         }
 
         Picture = rotatedPicture;
+    }
+
+    public void Flip()
+    {
+        var length = (int)Math.Sqrt(Picture.Length);
+
+        char[,] copy = new char[length, length];
+        Array.Copy(Picture, copy, Picture.Length);
+
+        for(int row = 0; row < length; row++)
+        {
+            for (int col = 0; col < length; col++)
+            {
+                Picture[row, col] = copy[length - 1 - row, col];
+            }
+        }
+
+        Console.WriteLine("");
     }
 }
 
