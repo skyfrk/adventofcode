@@ -21,15 +21,17 @@ var fullPictureEdgeLength = (int)Math.Sqrt(tiles.Count);
 
 var fullPicture = new Tile[fullPictureEdgeLength, fullPictureEdgeLength];
 
-fullPicture[0, 0] = tiles[0];
-tiles.RemoveAt(0);
+var firstTileIdx = 0;
+
+fullPicture[0, 0] = tiles[firstTileIdx];
+tiles.RemoveAt(firstTileIdx);
 
 var iterationCount = 0;
 
-PrintFullPicture(iterationCount);
-PrintFullPictureTileIds();
+//PrintFullPicture(iterationCount);
+//PrintFullPictureTileIds(iterationCount);
 
-// i assume that there are only unique matching edges...
+// i assume that there are only unique matching edges... => assumption is wrong. fuck.
 while (TryGetNextEmptySpot(out var position))
 {
     // first row doesn't care about the tiles above
@@ -95,9 +97,9 @@ while (TryGetNextEmptySpot(out var position))
     iterationCount++;
 
     //PrintFullPicture(iterationCount);
-    PrintFullPictureTileIds();
+    PrintFullPictureTileIds(iterationCount);
 
-    // System.Threading.Thread.Sleep(200);
+    // System.Threading.Thread.Sleep(50);
 }
 
 List<Tile> targetTiles = new()
@@ -132,7 +134,7 @@ void FlipSetTilesInFullPictureAsAWhole()
     var copy = new Tile[fullPictureEdgeLength, fullPictureEdgeLength];
     Array.Copy(fullPicture, copy, fullPicture.Length);
 
-    for (int row = 0; row < lastRowIncludeInFlip; row++)
+    for (int row = 0; row < lastRowIncludeInFlip + 1; row++)
     {
         for (int col = 0; col < fullPictureEdgeLength; col++)
         {
@@ -159,11 +161,13 @@ void PrintTile(Tile tile)
     Console.WriteLine(string.Empty);
 }
 
-void PrintFullPictureTileIds()
+void PrintFullPictureTileIds(int iterationCount)
 {
+    Console.Clear();
+    Console.WriteLine($"Iteration: {iterationCount}");
     Console.WriteLine(string.Empty);
 
-    for(int row = 0; row < fullPictureEdgeLength; row++)
+    for (int row = 0; row < fullPictureEdgeLength; row++)
     {
         var colStr = string.Empty;
 
