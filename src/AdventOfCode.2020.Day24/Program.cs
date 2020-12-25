@@ -5,19 +5,15 @@ using System.Linq;
 
 var input = File.ReadAllLines("input.txt");
 
-List<Tile> flatTilesList = new();
+var parsedInput = new Direction[input.Length][];
 
-var referenceTile = new Tile();
-
-flatTilesList.Add(referenceTile);
-
-foreach (var line in input)
+for(int i = 0; i < input.Length; i++)
 {
-    var currentTile = referenceTile;
+    var lineList = new List<Direction>();
 
     char prev = '_';
 
-    foreach (var letter in line)
+    foreach (var letter in input[i])
     {
         if (letter is 's' or 'n')
         {
@@ -27,105 +23,76 @@ foreach (var line in input)
 
         if (letter is 'e')
         {
-            if(prev is 's')
-            {
-                if(currentTile.SoutheastNeighbor is null)
-                {
-                    currentTile.SoutheastNeighbor = new Tile();
-                    currentTile = currentTile.SoutheastNeighbor;
-                }
-                else
-                {
-                    currentTile.WhiteSideIsUp = !currentTile.WhiteSideIsUp;
-                    currentTile = currentTile.SoutheastNeighbor;
-                }
-            } 
-            else if (prev is 'n')
-            {
-                if (currentTile.NortheastNeighbor is null)
-                {
-                    currentTile.NortheastNeighbor = new Tile();
-                    currentTile = currentTile.NortheastNeighbor;
-                }
-                else
-                {
-                    currentTile.WhiteSideIsUp = !currentTile.WhiteSideIsUp;
-                    currentTile = currentTile.NortheastNeighbor;
-                }
-            }
-            else
-            {
-                if (currentTile.EastNeighbor is null)
-                {
-                    currentTile.EastNeighbor = new Tile();
-                    currentTile = currentTile.EastNeighbor;
-                }
-                else
-                {
-                    currentTile.WhiteSideIsUp = !currentTile.WhiteSideIsUp;
-                    currentTile = currentTile.EastNeighbor;
-                }
-            }
+            if(prev is 's') lineList.Add(Direction.Southeast);
+            else if (prev is 'n') lineList.Add(Direction.Northeast);
+            else lineList.Add(Direction.East);
         }
 
         if (letter is 'w')
         {
-            if (prev is 's')
-            {
-                if (currentTile.SouthwestNeighbor is null)
-                {
-                    currentTile.SouthwestNeighbor = new Tile();
-                    currentTile = currentTile.SouthwestNeighbor;
-                }
-                else
-                {
-                    currentTile.WhiteSideIsUp = !currentTile.WhiteSideIsUp;
-                    currentTile = currentTile.SouthwestNeighbor;
-                }
-            }
-            else if (prev is 'n')
-            {
-                if (currentTile.NorthwestNeighbor is null)
-                {
-                    currentTile.NorthwestNeighbor = new Tile();
-                    currentTile = currentTile.NorthwestNeighbor;
-                }
-                else
-                {
-                    currentTile.WhiteSideIsUp = !currentTile.WhiteSideIsUp;
-                    currentTile = currentTile.NorthwestNeighbor;
-                }
-            }
-            else
-            {
-                if (currentTile.WestNeighbor is null)
-                {
-                    currentTile.WestNeighbor = new Tile();
-                    currentTile = currentTile.WestNeighbor;
-                }
-                else
-                {
-                    currentTile.WhiteSideIsUp = !currentTile.WhiteSideIsUp;
-                    currentTile = currentTile.WestNeighbor;
-                }
-            }
+            if (prev is 's') lineList.Add(Direction.Southwest);
+            else if (prev is 'n') lineList.Add(Direction.Northwest);
+            else lineList.Add(Direction.West);
         }
 
         prev = '_';
+    }
 
-        flatTilesList.Add(currentTile);
+    parsedInput[i] = lineList.ToArray();
+}
+
+// position => isWhite map
+Dictionary<(int x, int y), bool> tiles = new();
+
+tiles.Add((0, 0), true);
+
+foreach (var instruction in parsedInput)
+{
+    (int x, int y) position = (0, 0);
+
+    foreach (var direction in instruction)
+    {
+        position = GetPosition(position, direction);
+    }
+
+    if (tiles.TryGetValue(position, out var isWhite))
+    {
+        tiles[position] = !isWhite;
+    }
+    else
+    {
+        tiles.Add(position, false);
     }
 }
 
-Console.WriteLine($"Part 1: {flatTilesList.Count(t => !t.WhiteSideIsUp)}");
+Console.WriteLine($"Part 1: {tiles.Count(t => !t.Value)}");
 
-class Tile
+static (int x, int y) GetPosition((int x, int y) from, Direction toDirection)
 {
-    public bool WhiteSideIsUp { get; set; } = true;
-    public Tile EastNeighbor { get; set; }
-    public Tile SoutheastNeighbor { get; set; }
-    public Tile SouthwestNeighbor { get; set; }
-    public Tile WestNeighbor { get; set; }
-    public Tile NorthwestNeighbor { get; set; }
-    public Tile NortheastNeighbor { get; set; }
+    var (x, y) = from;
+
+    var hexGridOffset = 0;
+
+    if (y % 2 == 0) hexGridOffset = 1;
+
+    return toDirection switch
+    {
+        Direction.East => (x - 1, y),
+        Direction.West => (x + 1, y),
+        Direction.Northeast => (x - hexGridOffset, y - 1),
+        Direction.Northwest => (x + 1 - hexGridOffset, y - 1),
+        Direction.Southeast => (x - hexGridOffset, y + 1),
+        Direction.Southwest => (x + 1 - hexGridOffset, y + 1),
+        _ => throw new InvalidOperationException()
+    };
+}
+
+enum Direction
+{
+    East,
+    Southeast,
+    Southwest,
+    West,
+    Northwest,
+    Northeast
 }
